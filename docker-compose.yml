@@ -1,0 +1,27 @@
+# 部署：docker compose up -d
+# 本地集成测试（自带一个 Mumble 服务器）：docker compose --profile testing up
+
+services:
+  bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env                 # 所有 API key / Mumble 密码（不进镜像）
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./data:/app/data           # SQLite WAL：转写记录 + 身份存档 + 除名表（持久化）
+      - ./certs:/app/certs:ro      # Mumble 客户端证书（换证书=换身份，必须固定挂载）
+    # 与 murmur 同机时用 host 网络最省心（UDP 直通）；跨机则确保 64738/udp 可达
+    # network_mode: host
+
+  # 可选：仅本地集成测试用。生产请去掉 --profile testing，让 config.yaml 指向真实服务器
+  murmur:
+    image: mumblevoip/mumble-server:latest
+    profiles: ["testing"]
+    restart: unless-stopped
+    ports:
+      - "64738:64738"
+      - "64738:64738/udp"
+    volumes:
+      - ./murmur-data:/data
+    environment:
+      MUMBLE_CONFIG_welcometext: "测试服务器"

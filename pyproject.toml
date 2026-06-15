@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mumble-ai-bot"
+version = "0.1.0"
+description = "常驻 Mumble 频道的中文转写 + 角色音回灌 AI 机器人"
+requires-python = ">=3.12,<3.13"
+license = "GPL-3.0-or-later"
+
+[tool.setuptools]
+packages = ["mumble_bot"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+pythonpath = ["."]

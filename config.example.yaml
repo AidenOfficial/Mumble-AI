@@ -1,0 +1,68 @@
+# 复制为 config.yaml 后按需修改。API key 一律走环境变量（见 .env.example），不要写在这里。
+
+mumble:
+  host: mumble.example.com   # Mumble 服务器地址
+  port: 64738
+  username: 小特              # bot 在频道里的名字
+  # password: 走 MUMBLE_PASSWORD 环境变量
+  certfile: ./certs/bot.pem  # 客户端证书（决定身份；务必固定挂载）。无则留空走游客
+  channel: ""                # 要加入的频道名；空=根频道
+
+dashscope:
+  model: paraformer-realtime-v2
+  sample_rate: 16000          # paraformer 只吃 8k/16k；Mumble 48k 会被重采样到这里
+
+fish:
+  voice_id: ""               # 预先克隆好的角色音 id（用你有权使用的参考音）
+  model: s2-pro
+  output_format: pcm         # 取 pcm
+  sample_rate: 48000         # 请求直接输出 48k（免重采样）；若实际变调，改这里让 speaker 重采样
+
+openrouter:                   # 主 LLM：经 OpenRouter 路由 deepseek-v4-flash 到快速 Western provider
+  base_url: https://openrouter.ai/api/v1
+  model: deepseek/deepseek-v4-flash
+  tool_model: ""              # 空=同 model；可设 deepseek/deepseek-v4-pro 让工具/复杂路径用更强模型
+  provider_order: [fireworks, deepinfra, parasail, novita]  # TTFT 优先的有序回退
+  provider_sort: ""          # 留空=按上面 order；或设 throughput/latency/price 让 OpenRouter 自动排
+  allow_fallbacks: true
+  title: mumble-ai-bot
+
+deepseek:                     # 仅 llm_provider=deepseek 时用（直连，受中国管辖+审查）
+  base_url: https://api.deepseek.com
+  model: deepseek-v4-flash    # 非思考档（代码里强制 thinking disabled）
+
+gemini:
+  model: gemini-3.5-flash     # 兜底
+  thinking_level: low         # 交互路径关思考（low/minimal）
+
+behavior:
+  window_sec: 3600            # 滚动缓冲窗口（秒）
+  cooldown_sec: 180           # 两次主动插话最小间隔
+  silence_gate_sec: 2.5       # 主动插话需的最短静音
+  stt_close_silence_sec: 0.8  # 静音多久关闭 STT 流（成本门控 + 句界）
+  transmit_active_sec: 0.3    # 判定"有人正在传输"的最近活跃阈值
+  wake_regex: '(?:嘿|哎|喂)?\s*(?:小特|特特)'   # 唤醒短语（独特、别撞手机助手）；可选问候前缀 + 名字
+  wake_fuzzy_terms: []        # 模糊兜底候选词（如 ["小特","特特"]）；空=关闭模糊
+  wake_fuzzy_threshold: 80    # rapidfuzz 模糊匹配阈值(0-100)，<=0 关闭模糊
+  wake_followup_timeout_sec: 4 # 唤醒后没带内容时，等下一句的超时
+  proactive_enabled: true
+  proactive_tick_sec: 1.0     # 主动插话评估频率
+  unanswered_question_sec: 8  # 问号后多少秒无人接话视为"未应答"
+  llm_provider: openrouter    # 主用哪个：openrouter（默认）/ deepseek 直连 / gemini 兜底
+  data_dir: ./data            # SQLite 等持久化目录
+  admin_keys: []              # 管理员稳定键白名单（reg:<id> 或 cert hash；用 !whoami 获取）
+  persona: "你是频道里一个有点意思的伙伴，说话自然、简短、有点性格，别像客服。"
+  announce_on_join: "（小特已上线，会转写本频道对话；说「小特」可以叫我，发 !pause 可暂停转写。）"
+
+# 可被 AI 操作的外部 bot（通过给频道发它的文字命令）。{query} 会被替换为歌名/参数。
+# AI 用 music_control 工具调用：先确认你的点歌 bot 真实命令前缀再改这里。
+external_bots:
+  music:
+    commands:
+      play:   "!play {query}"
+      skip:   "!skip"
+      next:   "!skip"
+      pause:  "!pause"
+      resume: "!resume"
+      stop:   "!stop"
+      volume: "!volume {query}"
