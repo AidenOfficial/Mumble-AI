@@ -12,7 +12,8 @@ log = logging.getLogger(__name__)
 
 
 class CommandHandler:
-    def __init__(self, *, resolver, privacy, admin_keys, list_users, reply, reply_private, speaker=None):
+    def __init__(self, *, resolver, privacy, admin_keys, list_users, reply, reply_private,
+                 speaker=None, prefix: str = ","):
         self._resolver = resolver
         self._privacy = privacy
         self._admin_keys = admin_keys
@@ -20,14 +21,18 @@ class CommandHandler:
         self._reply = reply                # (text) -> 发到频道
         self._reply_private = reply_private  # (user, text) -> 私信
         self._speaker = speaker
+        self._prefix = prefix              # 独立前缀，避开点歌bot 的 ! 命名空间
 
     def handle(self, actor, text: str) -> bool:
-        """返回是否被当作命令处理。"""
+        """返回是否被当作命令处理。非本前缀（如点歌bot 的 !pause）一律不接管。"""
         text = text.strip()
-        if not text.startswith("!"):
+        if not text.startswith(self._prefix):
             return False
-        toks = text.split()
-        cmd = toks[0][1:].lower()
+        rest = text[len(self._prefix):].strip()
+        if not rest:
+            return False
+        toks = rest.split()
+        cmd = toks[0].lower()
         args = toks[1:]
         method = getattr(self, f"_cmd_{cmd}", None)
         if method is None:
@@ -58,11 +63,12 @@ class CommandHandler:
 
     # ---------- 命令 ----------
     def _cmd_help(self, actor, args):
+        p = self._prefix
         self._reply(
-            "命令：!who 列人 ｜ !whoami 看自己的键 ｜ !me <名字> 自报 ｜ "
-            "!bind <序号> <名字> [--save] ｜ !exclude <序号|名字> [--save] ｜ "
-            "!include <序号|名字> ｜ !forget <名字> ｜ !pause/!resume 转写 ｜ "
-            "!shutup [分钟] 闭嘴 ｜ !comeback 取消闭嘴"
+            f"命令（前缀 {p}）：{p}who 列人 ｜ {p}whoami 看自己的键 ｜ {p}me <名字> 自报 ｜ "
+            f"{p}bind <序号> <名字> [--save] ｜ {p}exclude <序号|名字> [--save] ｜ "
+            f"{p}include <序号|名字> ｜ {p}forget <名字> ｜ {p}pause/{p}resume 转写 ｜ "
+            f"{p}shutup [分钟] 闭嘴 ｜ {p}comeback 取消闭嘴"
         )
 
     def _cmd_who(self, actor, args):

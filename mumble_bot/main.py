@@ -127,6 +127,7 @@ def main() -> None:
         resolver=resolver, privacy=privacy, admin_keys=cfg.behavior.admin_keys,
         list_users=client.list_users, reply=client.send_channel,
         reply_private=client.send_private, speaker=speaker,
+        prefix=cfg.behavior.command_prefix,
     )
     client.set_command_handler(cmd)
 

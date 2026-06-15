@@ -85,8 +85,9 @@ class BehaviorConfig:
     llm_fallback: str = "gemini"       # 主路失败时自动落它；仅当该 provider 有 key 时启用，"" 关闭
     data_dir: str = "./data"
     admin_keys: list[str] = field(default_factory=list)
+    command_prefix: str = ","   # 文字命令前缀；用 , 避开点歌bot 等 ! 命令的冲突
     persona: str = "你是频道里一个有点意思的伙伴，说话自然、简短、有点性格，别像客服。"
-    announce_on_join: str = "（小特已上线，会转写本频道对话；说「小特」可以叫我，发 !pause 可暂停转写。）"
+    announce_on_join: str = "（小特已上线，会转写本频道对话；说「小特」可以叫我，发 ,pause 可暂停转写。）"
 
 
 @dataclass

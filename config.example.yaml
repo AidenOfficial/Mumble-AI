@@ -52,8 +52,9 @@ behavior:
   llm_fallback: gemini        # 主路失败自动落兜底（需配 GEMINI_API_KEY 才生效；留空关闭）
   data_dir: ./data            # SQLite 等持久化目录
   admin_keys: []              # 管理员稳定键白名单（reg:<id> 或 cert hash；用 !whoami 获取）
+  command_prefix: ","         # 文字命令前缀（避开点歌bot 等 ! 命令的冲突）
   persona: "你是频道里一个有点意思的伙伴，说话自然、简短、有点性格，别像客服。"
-  announce_on_join: "（小特已上线，会转写本频道对话；说「小特」可以叫我，发 !pause 可暂停转写。）"
+  announce_on_join: "（小特已上线，会转写本频道对话；说「小特」可以叫我，发 ,pause 可暂停转写。）"
 
 # 可被 AI 操作的外部 bot（通过给频道发它的文字命令）。{query} 会被替换为歌名/参数。
 # AI 用 music_control 工具调用：先确认你的点歌 bot 真实命令前缀再改这里。

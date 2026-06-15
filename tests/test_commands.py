@@ -12,7 +12,7 @@ class Reply:
         self.msgs.append(text)
 
 
-def setup(admin_keys=()):
+def setup(admin_keys=(), prefix="!"):
     r = IdentityResolver()
     p = PrivacyState()
     reply = Reply()
@@ -24,6 +24,7 @@ def setup(admin_keys=()):
         resolver=r, privacy=p, admin_keys=list(admin_keys),
         list_users=lambda: users, reply=reply,
         reply_private=lambda u, t: reply.priv.append((u, t)),
+        prefix=prefix,
     )
     return h, r, p, reply, users
 
@@ -96,3 +97,17 @@ def test_unknown_not_handled():
     h, _, _, _, users = setup()
     assert not h.handle(users[0], "!nope")
     assert not h.handle(users[0], "随便说点啥")
+
+
+def test_comma_prefix_works():
+    h, _, p, _, users = setup(prefix=",")
+    assert h.handle(users[0], ",shutup 1")
+    assert p.is_muted()
+
+
+def test_music_bot_bang_commands_not_intercepted():
+    # 点歌bot 的 ! 命令一律不被我们接管（避免 !pause/!help 双响应）
+    h, _, p, _, users = setup(admin_keys=["h1"], prefix=",")
+    for music_cmd in ("!pause", "!play 晴天", "!skip", "!help", "!stop"):
+        assert h.handle(users[0], music_cmd) is False
+    assert not p.is_paused()
