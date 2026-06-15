@@ -81,7 +81,8 @@ class BehaviorConfig:
     proactive_enabled: bool = True
     proactive_tick_sec: float = 1.0
     unanswered_question_sec: float = 8.0
-    llm_provider: str = "openrouter"   # openrouter（主）/ deepseek（直连）/ gemini（兜底）
+    llm_provider: str = "openrouter"   # openrouter（主）/ deepseek（直连）/ gemini
+    llm_fallback: str = "gemini"       # 主路失败时自动落它；仅当该 provider 有 key 时启用，"" 关闭
     data_dir: str = "./data"
     admin_keys: list[str] = field(default_factory=list)
     persona: str = "你是频道里一个有点意思的伙伴，说话自然、简短、有点性格，别像客服。"

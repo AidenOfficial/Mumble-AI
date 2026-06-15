@@ -1,0 +1,10 @@
+# 仓库里所有文本文件统一 LF（项目部署到 Linux/Docker），消除 Windows 上的 CRLF 警告
+* text=auto eol=lf
+
+# 明确二进制，避免被当文本改行尾
+*.pem binary
+*.png binary
+*.jpg binary
+*.ico binary
+*.opus binary
+*.wav binary

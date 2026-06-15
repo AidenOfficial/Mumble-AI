@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      # pymumble 通过 ctypes 加载 libopus
+      - name: 安装系统依赖 (libopus)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libopus0
+
+      - name: 安装 Python 依赖
+        run: pip install -r requirements-dev.txt
+
+      - name: 单元测试
+        run: pytest
+
+      # Windows 上装不动 libopus，这步在 Linux 上真正验证收音链路能 import
+      - name: 验证 pymumble + 收音模块导入
+        run: python -c "import pymumble_py3; import mumble_bot.mumble_client; print('pymumble + mumble_client import OK')"

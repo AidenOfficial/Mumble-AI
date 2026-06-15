@@ -48,7 +48,8 @@ behavior:
   proactive_enabled: true
   proactive_tick_sec: 1.0     # 主动插话评估频率
   unanswered_question_sec: 8  # 问号后多少秒无人接话视为"未应答"
-  llm_provider: openrouter    # 主用哪个：openrouter（默认）/ deepseek 直连 / gemini 兜底
+  llm_provider: openrouter    # 主用哪个：openrouter（默认）/ deepseek 直连 / gemini
+  llm_fallback: gemini        # 主路失败自动落兜底（需配 GEMINI_API_KEY 才生效；留空关闭）
   data_dir: ./data            # SQLite 等持久化目录
   admin_keys: []              # 管理员稳定键白名单（reg:<id> 或 cert hash；用 !whoami 获取）
   persona: "你是频道里一个有点意思的伙伴，说话自然、简短、有点性格，别像客服。"
