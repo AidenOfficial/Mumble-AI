@@ -2,7 +2,7 @@
 
 主路：正则匹配（独特短语，别撞手机助手）。命中后取唤醒词之后的文本为 query；
 若为空，调用方应等下一句（见 orchestrator/main 的 follow-up 逻辑）。
-可选：rapidfuzz 模糊兜底（应对 STT 把"小特"听成近音字），需在 config 配 wake_fuzzy_terms。
+可选：rapidfuzz 模糊兜底（应对 STT 把"豆沙"听成近音字），需在 config 配 wake_fuzzy_terms。
 v2 可换 Porcupine 端侧唤醒。
 """
 

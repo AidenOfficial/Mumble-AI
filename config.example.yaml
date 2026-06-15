@@ -3,7 +3,7 @@
 mumble:
   host: mumble.example.com   # Mumble 服务器地址
   port: 64738
-  username: 小特              # bot 在频道里的名字
+  username: 豆沙              # bot 在频道里的名字（Web 界面标题也取这个）
   # password: 走 MUMBLE_PASSWORD 环境变量
   certfile: ./certs/bot.pem  # 客户端证书（决定身份；务必固定挂载）。无则留空走游客
   channel: ""                # 要加入的频道名；空=根频道
@@ -42,8 +42,8 @@ behavior:
   silence_gate_sec: 2.5       # 主动插话需的最短静音
   stt_close_silence_sec: 0.8  # 静音多久关闭 STT 流（成本门控 + 句界）
   transmit_active_sec: 0.3    # 判定"有人正在传输"的最近活跃阈值
-  wake_regex: '(?:嘿|哎|喂)?\s*(?:小特|特特)'   # 唤醒短语（独特、别撞手机助手）；可选问候前缀 + 名字
-  wake_fuzzy_terms: []        # 模糊兜底候选词（如 ["小特","特特"]）；空=关闭模糊
+  wake_regex: '(?:嘿|哎|喂)?\s*豆沙'   # 唤醒短语（独特、别撞手机助手）；可选问候前缀 + 名字。改名记得同步改这里
+  wake_fuzzy_terms: []        # 模糊兜底候选词（如 ["豆沙"]）；空=关闭模糊
   wake_fuzzy_threshold: 80    # rapidfuzz 模糊匹配阈值(0-100)，<=0 关闭模糊
   wake_followup_timeout_sec: 4 # 唤醒后没带内容时，等下一句的超时
   proactive_enabled: true
@@ -55,7 +55,7 @@ behavior:
   admin_keys: []              # 管理员稳定键白名单（reg:<id> 或 cert hash；用 !whoami 获取）
   command_prefix: ","         # 文字命令前缀（避开点歌bot 等 ! 命令的冲突）
   persona: "你是频道里一个有点意思的伙伴，说话自然、简短、有点性格，别像客服。"
-  announce_on_join: "（小特已上线，会转写本频道对话；说「小特」可以叫我，发 ,pause 可暂停转写。）"
+  announce_on_join: "（豆沙已上线，会转写本频道对话；说「豆沙」可以叫我，发 ,pause 可暂停转写。）"
 
 web:                          # Web 管理界面
   enabled: true

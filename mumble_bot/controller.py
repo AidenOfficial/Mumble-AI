@@ -156,6 +156,7 @@ class BotController:
             "users": users,
             "transcript": transcript,
             "timers": timers,
+            "username": self.cfg.mumble.username,
             "voice_id": self.cfg.fish.voice_id,
             "llm_provider": self.cfg.behavior.llm_provider,
             "keys": {

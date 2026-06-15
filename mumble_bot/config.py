@@ -17,7 +17,7 @@ import yaml
 class MumbleConfig:
     host: str = "localhost"
     port: int = 64738
-    username: str = "小特"
+    username: str = "豆沙"
     password: str = ""
     certfile: str | None = None
     channel: str = ""
@@ -75,7 +75,7 @@ class BehaviorConfig:
     silence_gate_sec: float = 2.5
     stt_close_silence_sec: float = 0.8
     transmit_active_sec: float = 0.3
-    wake_regex: str = r"(?:嘿|哎|喂)?\s*(?:小特|特特)"
+    wake_regex: str = r"(?:嘿|哎|喂)?\s*豆沙"
     wake_fuzzy_threshold: int = 80
     wake_fuzzy_terms: list[str] = field(default_factory=list)
     wake_followup_timeout_sec: float = 4.0
@@ -88,7 +88,7 @@ class BehaviorConfig:
     admin_keys: list[str] = field(default_factory=list)
     command_prefix: str = ","   # 文字命令前缀；用 , 避开点歌bot 等 ! 命令的冲突
     persona: str = "你是频道里一个有点意思的伙伴，说话自然、简短、有点性格，别像客服。"
-    announce_on_join: str = "（小特已上线，会转写本频道对话；说「小特」可以叫我，发 ,pause 可暂停转写。）"
+    announce_on_join: str = "（豆沙已上线，会转写本频道对话；说「豆沙」可以叫我，发 ,pause 可暂停转写。）"
 
 
 @dataclass

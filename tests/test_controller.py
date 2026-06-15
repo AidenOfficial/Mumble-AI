@@ -198,10 +198,15 @@ def test_on_utterance_wake_triggers_speak(tmp_path, monkeypatch):
     c, sp, *_ = make(tmp_path, monkeypatch)
 
     class U:
-        text = "小特你好"
+        text = "豆沙你好"
 
     c.on_utterance(U())
     assert sp.spoken
+
+
+def test_snapshot_includes_username(tmp_path, monkeypatch):
+    c, *_ = make(tmp_path, monkeypatch)
+    assert c.snapshot_state()["username"] == "豆沙"
 
 
 def test_test_speak_and_actions(tmp_path, monkeypatch):

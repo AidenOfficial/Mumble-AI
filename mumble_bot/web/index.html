@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>小特 · 控制台</title>
+<title>豆沙 · 控制台</title>
 <style>
   :root{
     --bg:#f6f7f9; --card:#ffffff; --border:#e6e8eb; --text:#1c2024; --muted:#6b7280;
@@ -99,7 +99,7 @@
 <body>
 <div class="wrap">
   <header>
-    <div class="brand">小特 <small>控制台</small></div>
+    <div class="brand"><span id="brandName">豆沙</span> <small>控制台</small></div>
     <div class="pills" id="topPills"></div>
   </header>
 
@@ -117,7 +117,7 @@
         <div class="card">
           <h3>🔊 试听音色</h3>
           <div class="hint" style="margin-bottom:10px">当前音色：<span class="mono" id="curVoice">—</span></div>
-          <textarea id="speakText" placeholder="输入一句话，让它用当前音色在频道里说出来">大家好，我是小特，这是音色测试。</textarea>
+          <textarea id="speakText" placeholder="输入一句话，让它用当前音色在频道里说出来">大家好，这是一条音色测试，听听这个声音怎么样。</textarea>
           <div class="row" style="margin-top:10px">
             <button class="btn primary" onclick="testSpeak()">试听</button>
             <span class="hint">换音色去「设置 → 音色」改 Model ID 后保存即可。</span>
@@ -241,6 +241,7 @@ const pill=(t,k='')=>`<span class="pill ${k}"><span class="dot"></span>${t}</spa
 async function loadState(){try{STATE=await jget('/api/state');renderState();}catch(e){}}
 function renderState(){
   const s=STATE;if(!s)return;
+  const _nm=s.username||'豆沙'; $('#brandName').textContent=_nm; document.title=_nm+' · 控制台';
   $('#topPills').innerHTML =
     pill(s.connected?'已连接':'未连接',s.connected?'ok':'bad')+
     (s.channel?pill('频道 '+s.channel):'')+
