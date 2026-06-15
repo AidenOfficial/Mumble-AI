@@ -8,8 +8,9 @@ pymumble==1.6.1
 # --- STT：阿里 DashScope paraformer-realtime-v2 ---
 dashscope
 
-# --- TTS：Fish Audio OpenAudio s2-pro（官方 SDK，docs.fish.audio 用的就是这个）---
-fishaudio
+# --- TTS：Fish Audio OpenAudio s2-pro ---
+# 官方 SDK；1.3+ 提供新客户端 `from fishaudio import FishAudio`（不是 PyPI 上那个同名无关包 fishaudio）
+fish-audio-sdk>=1.3.0
 
 # --- LLM：DeepSeek（OpenAI 兼容）主 / Gemini 兜底 ---
 openai
