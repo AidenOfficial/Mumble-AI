@@ -7,6 +7,9 @@ mumble:
   # password: 走 MUMBLE_PASSWORD 环境变量
   certfile: ./certs/bot.pem  # 客户端证书（决定身份；务必固定挂载）。无则留空走游客
   channel: ""                # 要加入的频道名；空=根频道
+  tls_verify: false          # 默认不校验服务器证书：Mumble 用证书做身份(TOFU)、服务器普遍自签，开校验反而连不上。
+                             # 若你的服务器用 CA 签发的证书（如 Let's Encrypt），可设 true 开启校验。
+  tls_ca_certs: ""           # 可选：自定义 CA 证书(PEM)路径；空=用系统默认 CA。仅 tls_verify=true 时生效。
 
 dashscope:
   model: paraformer-realtime-v2

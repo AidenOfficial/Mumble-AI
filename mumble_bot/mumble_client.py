@@ -20,12 +20,21 @@ from pymumble_py3.constants import (
     PYMUMBLE_CLBK_USERREMOVED,
 )
 
+from ._ssl_compat import install_ssl_wrap_socket_shim
+
 log = logging.getLogger(__name__)
 _TAG = re.compile(r"<[^>]+>")  # Mumble 文字消息可能带 HTML 标签
 
 
 class MumbleClient:
     def __init__(self, cfg, *, resolver, stt_manager, privacy, command_handler=None, clock=time.time):
+        # Py3.12 移除了 ssl.wrap_socket，pymumble 1.6.1 的 connect() 仍调用它 → 连接前补回。
+        # 默认不校验服务器证书（Mumble 用证书做身份/TOFU、服务器多自签）；mumble.tls_verify 可开启。
+        install_ssl_wrap_socket_shim(
+            verify=cfg.mumble.tls_verify,
+            ca_certs=cfg.mumble.tls_ca_certs or None,
+            server_hostname=cfg.mumble.host,
+        )
         self._cfg = cfg
         self._resolver = resolver
         self._stt = stt_manager

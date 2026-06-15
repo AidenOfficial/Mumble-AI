@@ -21,6 +21,8 @@ class MumbleConfig:
     password: str = ""
     certfile: str | None = None
     channel: str = ""
+    tls_verify: bool = False    # 默认不校验服务器证书：Mumble 用证书做身份(TOFU)、服务器多自签，开校验反而连不上
+    tls_ca_certs: str = ""      # 可选 CA 证书(PEM)路径；空=系统默认 CA。仅 tls_verify=true 生效
 
 
 @dataclass
