@@ -46,8 +46,9 @@ class ProactiveEvaluator:
         self._thread = threading.Thread(target=self._loop, name="proactive", daemon=True)
 
     def start(self) -> None:
-        if self._cfg.proactive_enabled:
-            self._thread.start()
+        # 线程无条件起；是否真插话由 gate() 里的 proactive_enabled 实时控制
+        # （这样 Web 把它从关→开能即时生效，无需重启）。
+        self._thread.start()
 
     def _loop(self) -> None:
         while not self._stop.wait(self._cfg.proactive_tick_sec):

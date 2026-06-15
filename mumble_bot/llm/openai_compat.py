@@ -19,8 +19,11 @@ class OpenAICompatLLM(LLMClient):
                  default_headers=None, tool_model=None):
         from openai import OpenAI  # 局部导入：纯逻辑测试无需安装 openai
 
+        # 必须设超时：默认 10min，卡住的 provider 会让唯一的 speaker 线程哑掉很久，
+        # 且连接挂起不抛异常 → FailoverLLM 不触发。短超时 + 少重试 = 卡了就快速落兜底。
         self._client = OpenAI(api_key=api_key, base_url=base_url,
-                              default_headers=default_headers or None)
+                              default_headers=default_headers or None,
+                              timeout=30.0, max_retries=1)
         self._model = model
         self._tool_model = tool_model or model
         self._extra = extra_body or {}

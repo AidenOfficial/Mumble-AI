@@ -6,9 +6,12 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 
 from .base import STTResult, STTStream
+
+log = logging.getLogger(__name__)
 
 
 # region -> (http endpoint, websocket endpoint)
@@ -59,8 +62,9 @@ class _DashScopeStream(STTStream):
                     is_final = False
                 on_result(STTResult(text=text, is_final=is_final))
 
-            def on_error(self, result):  # noqa: D401
-                pass
+            def on_error(self, result):
+                # 别静默吞错——鉴权失败/断网时至少要能从日志看出转写为什么不工作
+                log.warning("DashScope STT 错误: %s", getattr(result, "message", result))
 
             def on_complete(self):
                 pass

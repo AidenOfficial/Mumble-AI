@@ -6,6 +6,7 @@ werkzeug 简易服务器，homelab 量级够用。
 
 from __future__ import annotations
 
+import hmac
 import logging
 import threading
 from pathlib import Path
@@ -24,7 +25,7 @@ def create_app(ctrl, password: str = ""):
             return True
         hdr = request.headers.get("Authorization", "")
         token = hdr[7:] if hdr.startswith("Bearer ") else request.headers.get("X-Auth", "")
-        return token == password
+        return hmac.compare_digest(token, password)   # 定时安全比较
 
     @app.before_request
     def _guard():

@@ -13,6 +13,7 @@ import time
 
 import pymumble_py3 as pymumble
 from pymumble_py3.constants import (
+    PYMUMBLE_CLBK_CONNECTED,
     PYMUMBLE_CLBK_DISCONNECTED,
     PYMUMBLE_CLBK_SOUNDRECEIVED,
     PYMUMBLE_CLBK_TEXTMESSAGERECEIVED,
@@ -33,6 +34,7 @@ class MumbleClient:
         self._clock = clock
         self._my_sess = None
         self.connected = False
+        self._ever_connected = False
         self._last_tx: dict[int, float] = {}   # session -> 最近收到音频时刻（所有人，含被除名）
         self._tx_lock = threading.Lock()
 
@@ -46,12 +48,29 @@ class MumbleClient:
         self.mumble.callbacks.set_callback(PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, self._on_text)
         self.mumble.callbacks.set_callback(PYMUMBLE_CLBK_USERREMOVED, self._on_user_removed)
         self.mumble.callbacks.set_callback(PYMUMBLE_CLBK_DISCONNECTED, self._on_disconnected)
+        self.mumble.callbacks.set_callback(PYMUMBLE_CLBK_CONNECTED, self._on_connected)
 
     def set_command_handler(self, handler) -> None:
         self._cmd = handler
 
     def _on_disconnected(self, *_a) -> None:
         self.connected = False
+        self._my_sess = None      # 断开后旧 session 失效，清缓存
+
+    def _on_connected(self, *_a) -> None:
+        """初次 + 每次自动重连都会触发。重连后必须重置 session 缓存并重进频道。"""
+        self.connected = True
+        self._my_sess = None      # 重连后 session 变了；不清会导致自我过滤错杀真人语音
+        if not self._ever_connected:
+            self._ever_connected = True
+            return                # 初次连接的后置逻辑（入频道/断言/公告）由 connect() 负责
+        ch = self._cfg.mumble.channel
+        if ch:
+            try:
+                self.mumble.channels.find_by_name(ch).move_in()
+            except Exception:
+                log.warning("重连后找不到频道 %s，留在默认频道", ch)
+        log.info("已重连，session 缓存已重置")
 
     def is_connected(self) -> bool:
         return self.connected

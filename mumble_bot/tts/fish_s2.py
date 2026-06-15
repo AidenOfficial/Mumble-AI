@@ -24,7 +24,7 @@ class FishS2TTS(TTSEngine):
         from fishaudio import FishAudio
         from fishaudio.types.tts import TTSConfig
 
-        self._client = FishAudio(api_key=api_key)
+        self._client = FishAudio(api_key=api_key, timeout=30.0)  # 默认 240s，太长会拖死 speaker
         self._voice_id = voice_id or None
         self._model = model
         self.sample_rate = sample_rate

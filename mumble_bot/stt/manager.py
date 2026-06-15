@@ -90,6 +90,7 @@ class STTManager:
 
     def feed(self, session: int, canonical: str, pcm48k: bytes) -> None:
         now = self._clock()
+        dead = None
         with self._lock:
             ss = self._sessions.get(session)
             if ss is None:
@@ -100,7 +101,17 @@ class STTManager:
                     log.exception("开 STT 流失败 session=%s", session)
                     return
                 self._sessions[session] = ss
-            ss.feed(pcm48k, now)
+            try:
+                ss.feed(pcm48k, now)
+            except Exception:
+                # 流死掉时别让异常冒到 pymumble 收音回调线程；丢弃该流，下次来音频重开
+                log.warning("STT feed 异常，丢弃该流 session=%s", session, exc_info=True)
+                dead = self._sessions.pop(session, None)
+        if dead is not None:
+            try:
+                dead.close()
+            except Exception:
+                pass
 
     def _watch(self) -> None:
         while not self._stop.wait(0.1):

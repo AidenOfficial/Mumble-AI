@@ -103,7 +103,7 @@ class CommandHandler:
 
     def _cmd_me(self, actor, args):
         if not args:
-            self._reply("用法：!me 你的名字")
+            self._reply(f"用法：{self._prefix}me 你的名字")
             return
         name = " ".join(args).strip()
         self._resolver.bind_session(actor.get("session"), name)
@@ -115,7 +115,7 @@ class CommandHandler:
         save = "--save" in args
         args = [a for a in args if a != "--save"]
         if len(args) < 2 or not args[0].isdigit():
-            self._reply("用法：!bind <序号> <名字> [--save]")
+            self._reply(f"用法：{self._prefix}bind <序号> <名字> [--save]")
             return
         u = self._user_by_index(args[0])
         if u is None:
@@ -133,7 +133,7 @@ class CommandHandler:
         save = "--save" in args
         args = [a for a in args if a != "--save"]
         if not args:
-            self._reply("用法：!exclude <序号|名字> [--save]")
+            self._reply(f"用法：{self._prefix}exclude <序号|名字> [--save]")
             return
         if args[0].isdigit():
             u = self._user_by_index(args[0])
@@ -152,7 +152,7 @@ class CommandHandler:
         if not self._require_admin(actor):
             return
         if not args:
-            self._reply("用法：!include <序号|名字>")
+            self._reply(f"用法：{self._prefix}include <序号|名字>")
             return
         if args[0].isdigit():
             u = self._user_by_index(args[0])
@@ -170,7 +170,7 @@ class CommandHandler:
         if not self._require_admin(actor):
             return
         if not args:
-            self._reply("用法：!forget <名字>")
+            self._reply(f"用法：{self._prefix}forget <名字>")
             return
         name = " ".join(args).strip()
         n = self._resolver.forget_name(name)

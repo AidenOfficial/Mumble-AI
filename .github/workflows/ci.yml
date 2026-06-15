@@ -26,6 +26,9 @@ jobs:
       - name: 单元测试
         run: pytest
 
+      - name: 语法编译检查 (compileall)
+        run: python -m compileall -q mumble_bot
+
       # Windows 上装不动 libopus，这步在 Linux 上真正验证收音链路能 import
       - name: 验证 pymumble + 收音模块导入
         run: python -c "import pymumble_py3; import mumble_bot.mumble_client; print('pymumble + mumble_client import OK')"

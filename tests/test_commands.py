@@ -111,3 +111,15 @@ def test_music_bot_bang_commands_not_intercepted():
     for music_cmd in ("!pause", "!play 晴天", "!skip", "!help", "!stop"):
         assert h.handle(users[0], music_cmd) is False
     assert not p.is_paused()
+
+
+def test_usage_strings_use_prefix_not_hardcoded_bang():
+    # 用法提示要跟随实际前缀，别写死 ! —— 否则用户被告知去敲会被点歌bot抢走的命令
+    h, _, _, reply, users = setup(prefix=",")
+    h.handle(users[0], ",me")                       # 非管理员命令，无参 → 用法
+    assert any(",me" in m for m in reply.msgs)
+    assert not any("!me" in m for m in reply.msgs)
+    h2, _, _, reply2, users2 = setup(admin_keys=["h1"], prefix=",")
+    h2.handle(users2[0], ",bind")                   # 管理员命令，参数不足 → 用法
+    assert any(",bind" in m for m in reply2.msgs)
+    assert not any("!bind" in m for m in reply2.msgs)

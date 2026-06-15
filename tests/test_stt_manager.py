@@ -47,6 +47,35 @@ def test_interim_not_persisted():
     assert got == []
 
 
+class BoomStream:
+    def __init__(self, on_result):
+        self.closed = False
+
+    def feed(self, pcm16k):
+        raise RuntimeError("stream dead")
+
+    def close(self):
+        self.closed = True
+
+
+def test_feed_exception_drops_stream_without_raising():
+    streams = []
+
+    def factory(cb):
+        s = BoomStream(cb)
+        streams.append(s)
+        return s
+
+    m = STTManager(factory, lambda u: None,
+                   in_rate=16000, out_rate=16000, close_silence=999, clock=lambda: 1.0)
+    # feed 内部抛异常不能冒到调用方（pymumble 音频回调线程）
+    m.feed(session=1, canonical="A", pcm48k=b"\x00\x00" * 160)
+    assert streams[0].closed                    # 死流被关掉丢弃
+    # 再喂 → 重开一条新流（证明旧的已被移除）
+    m.feed(session=1, canonical="A", pcm48k=b"\x00\x00" * 160)
+    assert len(streams) == 2
+
+
 def test_close_session_closes_stream():
     streams = []
 

@@ -1,28 +1,29 @@
 # Mumble 转写 AI 机器人 — 运行依赖
 # Python 3.12（不要用 3.13：audioop 被移除、pymumble 未验证）
+# 钉了上下界：下界保证 API 可用，上界挡住破坏性大版本（某次 SDK breaking release 不至于让重建挂掉）。
 
 # --- Mumble 客户端（钉死；2024-05 已停维但可用）---
 pymumble==1.6.1
 # pymumble 通过 ctypes 加载系统 libopus（容器内 apt 装 libopus0），无需额外 python opus 包
 
 # --- STT：阿里 DashScope paraformer-realtime-v2 ---
-dashscope
+dashscope>=1.20,<2
 
 # --- TTS：Fish Audio OpenAudio s2-pro ---
 # 官方 SDK；1.3+ 提供新客户端 `from fishaudio import FishAudio`（不是 PyPI 上那个同名无关包 fishaudio）
-fish-audio-sdk>=1.3.0
+fish-audio-sdk>=1.3.0,<2
 
 # --- LLM：DeepSeek（OpenAI 兼容）主 / Gemini 兜底 ---
-openai
-google-genai
+openai>=1.40,<3
+google-genai>=1.0,<3
 
 # --- 音频重采样（替代被移除的 audioop）---
-soxr
-numpy
+soxr>=0.5
+numpy>=1.26
 
 # --- Web 管理界面 ---
-flask
+flask>=3.0,<4
 
 # --- 工具 ---
-PyYAML
-rapidfuzz
+PyYAML>=6.0
+rapidfuzz>=3.0
