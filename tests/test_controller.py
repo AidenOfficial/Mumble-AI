@@ -209,6 +209,32 @@ def test_snapshot_includes_username(tmp_path, monkeypatch):
     assert c.snapshot_state()["username"] == "豆沙"
 
 
+class FakeClient:
+    def __init__(self, users):
+        self._users = users
+
+    def list_users(self):
+        return self._users
+
+    def is_connected(self):
+        return True
+
+    def current_channel(self):
+        return "ch"
+
+
+def test_action_bind_and_exclude(tmp_path, monkeypatch):
+    c, *_ = make(tmp_path, monkeypatch)
+    c.client = FakeClient([{"session": 10, "name": "raw1"}, {"session": 20, "name": "raw2"}])
+    assert c.action("bind", {"idx": 1, "name": "小明", "save": True})
+    assert c.resolver.bound == (20, "小明")          # 绑定到正确 session
+    assert getattr(c.resolver, "arch", None) is not None   # --save → 存档
+    assert c.action("exclude", {"idx": 0})
+    assert getattr(c.resolver, "excl", None) is not None
+    assert c.action("bind", {"idx": 9, "name": "x"}) is False   # 序号越界
+    assert c.action("bind", {"idx": 1, "name": ""}) is False    # 空名字
+
+
 def test_test_speak_and_actions(tmp_path, monkeypatch):
     c, sp, _, _, priv = make(tmp_path, monkeypatch)
     assert c.test_speak("hi") and sp.spoken

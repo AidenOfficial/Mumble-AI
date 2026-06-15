@@ -206,7 +206,7 @@
 <script>
 const $=(s,e=document)=>e.querySelector(s), $$=(s,e=document)=>[...e.querySelectorAll(s)];
 const TK='mbot_token';
-let CFG=null, ORIG={}, STATE=null;
+let CFG=null, ORIG={}, STATE=null, _membersSig=null;
 const tok=()=>localStorage.getItem(TK)||'';
 const setTok=t=>t?localStorage.setItem(TK,t):localStorage.removeItem(TK);
 
@@ -257,17 +257,21 @@ function renderState(){
   $('#timerList').innerHTML=(s.timers&&s.timers.length)
     ? s.timers.map(t=>`<div class="uitem"><span class="grow">${esc(t.label||'计时')}</span><span class="mono">${t.remaining}s</span></div>`).join('')
     : '<div class="hint">无</div>';
-  // members
-  $('#memberList').innerHTML=(s.users&&s.users.length)? s.users.map(u=>`
-    <div class="uitem">
-      <span class="nm">${esc(u.name)}</span><span class="raw">(${esc(u.raw)})</span>
-      <span class="pill ${u.status==='除名'?'bad':(u.status==='已绑定'?'ok':'')}">${u.status}</span>
-      <span class="grow"></span>
-      <input type="text" placeholder="改名" id="bn${u.idx}" style="width:120px">
-      <label class="switch" title="存档(跨会话)"><input type="checkbox" id="bs${u.idx}"><span class="track"></span></label>
-      <button class="btn sm" onclick="bindUser(${u.idx})">绑定</button>
-      <button class="btn sm" onclick="doAction('exclude',{idx:${u.idx}})">除名</button>
-    </div>`).join('') : '<div class="hint">当前没有其他人</div>';
+  // members（仅成员数据变化时重渲染，避免 3 秒刷新清掉正在输入的改名框）
+  const _msig=JSON.stringify(s.users||[]);
+  if(_msig!==_membersSig){
+    _membersSig=_msig;
+    $('#memberList').innerHTML=(s.users&&s.users.length)? s.users.map(u=>`
+      <div class="uitem">
+        <span class="nm">${esc(u.name)}</span><span class="raw">(${esc(u.raw)})</span>
+        <span class="pill ${u.status==='除名'?'bad':(u.status==='已绑定'?'ok':'')}">${u.status}</span>
+        <span class="grow"></span>
+        <input type="text" placeholder="改名" id="bn${u.idx}" style="width:120px">
+        <label class="switch" title="存档(跨会话)"><input type="checkbox" id="bs${u.idx}"><span class="track"></span></label>
+        <button class="btn sm" onclick="bindUser(${u.idx})">绑定</button>
+        <button class="btn sm" onclick="doAction('exclude',{idx:${u.idx}})">除名</button>
+      </div>`).join('') : '<div class="hint">当前没有其他人</div>';
+  }
   // transcript
   $('#tsBox').innerHTML=(s.transcript&&s.transcript.length)? s.transcript.map(x=>`
     <div class="line"><span class="clk">${x.clock}</span><span class="who">${esc(x.user)}</span>${esc(x.text)}</div>`).join('')
