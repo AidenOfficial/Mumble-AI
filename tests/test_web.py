@@ -25,6 +25,9 @@ class FakeCtrl:
     def action(self, name, data):
         return True
 
+    def get_logs(self, after, limit):
+        return [{"seq": 1, "level": "INFO", "logger": "x", "msg": "hi", "clock": "00:00:00"}]
+
 
 def _client(password=""):
     return create_app(FakeCtrl(), password).test_client()
@@ -44,6 +47,11 @@ def test_state_and_config():
 def test_post_config_calls_apply():
     r = _client().post("/api/config", json={"fish.voice_id": "abc"})
     assert r.get_json()["changed"] == ["fish.voice_id"]
+
+
+def test_logs_route():
+    r = _client().get("/api/logs?after=0")
+    assert r.get_json()["lines"][0]["msg"] == "hi"
 
 
 def test_test_speak_and_action():

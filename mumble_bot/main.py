@@ -16,6 +16,7 @@ from .buffer import TranscriptStore
 from .commands import CommandHandler
 from .config import load_config, missing_keys
 from .controller import BotController
+from .logbuffer import RingLogHandler
 from .db import Database
 from .identity import IdentityResolver
 from .llm.factory import build_llm
@@ -43,6 +44,9 @@ def main() -> None:
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
+    log_ring = RingLogHandler(600)               # 供 Web 日志面板
+    logging.getLogger().addHandler(log_ring)
+    logging.getLogger("werkzeug").setLevel(logging.WARNING)  # 别让 web 请求日志刷屏
     cfg = load_config()
     miss = missing_keys(cfg)
     if miss:
@@ -104,6 +108,7 @@ def main() -> None:
         cfg, config_path, wake=wake, speaker=speaker, orchestrator=orchestrator,
         store=store, privacy=privacy, resolver=resolver, timers=timers,
     )
+    controller.log_buffer = log_ring
 
     stt_factory = make_dashscope_factory(
         cfg.dashscope.api_key, cfg.dashscope.model, cfg.dashscope.sample_rate, cfg.dashscope.region

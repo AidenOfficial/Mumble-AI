@@ -74,6 +74,14 @@
   .ts .line:nth-child(odd){background:var(--bg)}
   .ts .clk{color:var(--muted);font-family:ui-monospace,monospace;font-size:12px;margin-right:8px}
   .ts .who{font-weight:600;margin-right:6px}
+  .logbox{max-height:62vh;overflow:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.55}
+  .logbox .ln{padding:2px 6px;border-radius:6px;white-space:pre-wrap;word-break:break-word}
+  .logbox .ln:nth-child(odd){background:var(--bg)}
+  .logbox .clk{color:var(--muted);margin-right:7px}
+  .logbox .lv{font-weight:700;margin-right:7px}
+  .logbox .lg{color:var(--muted);margin-right:6px}
+  .lv-INFO .lv{color:var(--accent)} .lv-DEBUG .lv{color:var(--muted)}
+  .lv-WARNING .lv{color:var(--warn)} .lv-ERROR .lv,.lv-CRITICAL .lv{color:var(--danger)}
   .savebar{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--card) 92%,transparent);
     backdrop-filter:blur(8px);border-top:1px solid var(--border);padding:12px 18px;display:flex;justify-content:flex-end;
     gap:12px;align-items:center}
@@ -100,6 +108,7 @@
     <button data-tab="settings">设置</button>
     <button data-tab="members">成员</button>
     <button data-tab="transcript">转写</button>
+    <button data-tab="log">日志</button>
   </nav>
 
   <main>
@@ -160,6 +169,19 @@
         <div class="ts" id="tsBox"><div class="hint">—</div></div>
       </div>
     </section>
+
+    <section id="tab-log" class="hidden">
+      <div class="card">
+        <h3>🐞 日志<span class="grow"></span>
+          <select id="logLevel" onchange="renderLogs()" style="width:auto;padding:5px 9px">
+            <option value="all">全部</option>
+            <option value="warn">警告+</option>
+            <option value="error">仅错误</option>
+          </select>
+        </h3>
+        <div class="logbox" id="logBox"><div class="hint">—</div></div>
+      </div>
+    </section>
   </main>
 </div>
 
@@ -211,6 +233,7 @@ $$('nav.tabs button').forEach(b=>b.onclick=()=>{
   $$('main > section').forEach(s=>s.classList.toggle('hidden',s.id!=='tab-'+b.dataset.tab));
   $('#saveBar').classList.toggle('hidden',b.dataset.tab!=='settings');
   if(b.dataset.tab==='settings'&&!CFG)loadConfig();
+  if(b.dataset.tab==='log')loadLogs();
 });
 
 // ---- state ----
@@ -264,6 +287,27 @@ async function doAction(name,data){
 async function testSpeak(){
   const r=await jpost('/api/test_speak',{text:$('#speakText').value});
   toast(r.ok?'已让它说':'没说（空文本或未连接）',r.ok?'ok':'warn');
+}
+
+// ---- logs ----
+let LOGS=[], lastLogSeq=0;
+async function loadLogs(){
+  try{
+    const d=await jget('/api/logs?after='+lastLogSeq);
+    if(d.lines&&d.lines.length){
+      LOGS.push(...d.lines); if(LOGS.length>1500)LOGS=LOGS.slice(-1500);
+      lastLogSeq=d.lines[d.lines.length-1].seq; renderLogs();
+    }
+  }catch(e){}
+}
+function renderLogs(){
+  const f=$('#logLevel').value, box=$('#logBox');
+  const atBottom=box.scrollHeight-box.scrollTop-box.clientHeight<48;
+  const rows=LOGS.filter(r=>f==='all'||(f==='warn'&&r.level!=='INFO'&&r.level!=='DEBUG')||(f==='error'&&(r.level==='ERROR'||r.level==='CRITICAL')));
+  box.innerHTML=rows.length
+    ? rows.map(r=>`<div class="ln lv-${esc(r.level)}"><span class="clk">${r.clock}</span><span class="lv">${esc(r.level[0])}</span><span class="lg">${esc(r.logger)}</span>${esc(r.msg)}</div>`).join('')
+    : '<div class="hint">暂无日志</div>';
+  if(atBottom)box.scrollTop=box.scrollHeight;
 }
 
 // ---- settings ----
@@ -328,7 +372,11 @@ async function init(){
   loadState();
 }
 init();
-setInterval(()=>{ if(!$('#gate').classList.contains('hidden'))return; loadState(); },3000);
+setInterval(()=>{
+  if(!$('#gate').classList.contains('hidden'))return;
+  loadState();
+  const a=$('nav.tabs button.active'); if(a&&a.dataset.tab==='log')loadLogs();
+},3000);
 </script>
 </body>
 </html>

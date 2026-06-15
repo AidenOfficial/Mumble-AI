@@ -46,6 +46,11 @@ def create_app(ctrl, password: str = ""):
     def state():
         return jsonify(ctrl.snapshot_state())
 
+    @app.get("/api/logs")
+    def logs():
+        after = request.args.get("after", 0, type=int)
+        return jsonify({"lines": ctrl.get_logs(after, 600)})
+
     @app.get("/api/config")
     def get_config():
         return jsonify({"groups": ctrl.get_editable_config()})

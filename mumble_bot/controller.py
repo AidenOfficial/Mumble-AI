@@ -105,6 +105,10 @@ class BotController:
         self.command_handler = None
         self.stt_manager = None
         self.proactive = None
+        self.log_buffer = None           # RingLogHandler，供 Web 日志面板
+
+    def get_logs(self, after: int = 0, limit: int = 600) -> list:
+        return self.log_buffer.get(after, limit) if self.log_buffer is not None else []
 
     # ---------- 通路1 final 回调（用 self.wake，便于热换） ----------
     def on_utterance(self, u) -> None:
