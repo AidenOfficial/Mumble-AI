@@ -58,6 +58,7 @@
     background:#fff;transition:transform .15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
   .switch input:checked + .track{background:var(--accent)}
   .switch input:checked + .track::after{transform:translateX(17px)}
+  .switch .swlbl{font-size:13px;color:var(--muted)}
   button.btn{appearance:none;border:1px solid var(--border);background:var(--card);color:var(--text);
     font:inherit;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;transition:.12s}
   button.btn:hover{border-color:var(--accent);color:var(--accent)}
@@ -267,7 +268,7 @@ function renderState(){
         <span class="pill ${u.status==='除名'?'bad':(u.status==='已绑定'?'ok':'')}">${u.status}</span>
         <span class="grow"></span>
         <input type="text" placeholder="改名" id="bn${u.idx}" style="width:120px">
-        <label class="switch" title="存档(跨会话)"><input type="checkbox" id="bs${u.idx}"><span class="track"></span></label>
+        <label class="switch" title="开=绑定后永久存档（跨会话、按身份记住）；关=仅本次会话有效"><span class="swlbl">存档</span><input type="checkbox" id="bs${u.idx}"><span class="track"></span></label>
         <button class="btn sm" onclick="bindUser(${u.idx})">绑定</button>
         <button class="btn sm" onclick="doAction('exclude',{idx:${u.idx}})">除名</button>
       </div>`).join('') : '<div class="hint">当前没有其他人</div>';

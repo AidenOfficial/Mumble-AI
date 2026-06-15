@@ -5,8 +5,8 @@
 
 - model: speech-1.5/1.6/s1/s2-pro（我们用 s2-pro）。
 - reference_id: 音色的 Model ID（在 fish.audio 音色页拿，或克隆后得到；填 config.fish.voice_id）。
-- sample_rate/format 在 TTSConfig 里；请求 48k PCM，注入 Mumble 免重采样。
-  ⚠️ Fish 是否真按请求采样率输出需实测，不对就把 config.fish.sample_rate 改成实际值，speaker 会重采样。
+- sample_rate/format 在 TTSConfig 里。Fish PCM 仅支持 8000/16000/24000/32000/44100（不支持 48000），
+  用 44100；speaker（StreamResampler）再把它重采样到 Mumble 的 48k。
 
 更激进的 client.tts.stream_websocket（边产 token 边出声）留作后续首音优化。
 """

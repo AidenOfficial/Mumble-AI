@@ -39,8 +39,7 @@ class FishConfig:
     voice_id: str = ""
     model: str = "s2-pro"
     output_format: str = "pcm"
-    sample_rate: int = 48000   # 请求 Fish 直接输出 48k（注入 Mumble 免重采样）。
-    # ⚠️ 若 Fish 实际不按此采样率输出，注入会变调——上线前用真实 key 核对，必要时改这里并由 speaker 重采样。
+    sample_rate: int = 44100   # Fish PCM 仅支持 8000/16000/24000/32000/44100（不支持 48000）；speaker 自动重采样到 48k 注入 Mumble。
 
 
 @dataclass

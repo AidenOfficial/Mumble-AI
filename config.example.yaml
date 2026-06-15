@@ -20,7 +20,7 @@ fish:
   voice_id: ""               # 预先克隆好的角色音 id（用你有权使用的参考音）
   model: s2-pro
   output_format: pcm         # 取 pcm
-  sample_rate: 48000         # 请求直接输出 48k（免重采样）；若实际变调，改这里让 speaker 重采样
+  sample_rate: 44100         # Fish PCM 仅支持 8000/16000/24000/32000/44100（不支持 48000）；speaker 会重采样到 48k 注入 Mumble
 
 openrouter:                   # 主 LLM：经 OpenRouter 路由 deepseek-v4-flash 到快速 Western provider
   base_url: https://openrouter.ai/api/v1
