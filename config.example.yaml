@@ -11,6 +11,7 @@ mumble:
 dashscope:
   model: paraformer-realtime-v2
   sample_rate: 16000          # paraformer 只吃 8k/16k；Mumble 48k 会被重采样到这里
+  region: cn                  # cn=国内(百炼控制台的 key) / intl=国际站(Singapore，境外部署多用这个)
 
 fish:
   voice_id: ""               # 预先克隆好的角色音 id（用你有权使用的参考音）

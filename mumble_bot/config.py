@@ -28,6 +28,7 @@ class DashScopeConfig:
     api_key: str = ""
     model: str = "paraformer-realtime-v2"
     sample_rate: int = 16000
+    region: str = "cn"   # cn=国内(dashscope.aliyuncs.com) / intl=国际(dashscope-intl，Singapore)
 
 
 @dataclass

@@ -11,21 +11,36 @@ from collections.abc import Callable
 from .base import STTResult, STTStream
 
 
-def make_dashscope_factory(api_key: str, model: str, sample_rate: int):
-    """返回一个 MakeStream 工厂，供 STTManager 每个活跃说话人开一条流。"""
+# region -> (http endpoint, websocket endpoint)
+_ENDPOINTS = {
+    "cn": ("https://dashscope.aliyuncs.com/api/v1",
+           "wss://dashscope.aliyuncs.com/api-ws/v1/inference"),
+    "intl": ("https://dashscope-intl.aliyuncs.com/api/v1",
+             "wss://dashscope-intl.aliyuncs.com/api-ws/v1/inference"),
+}
+
+
+def make_dashscope_factory(api_key: str, model: str, sample_rate: int, region: str = "cn"):
+    """返回 MakeStream 工厂。region: cn=国内 / intl=国际(Singapore)。
+
+    在此设置 SDK 全局 api_key 与 endpoint（按 region）；流对象只负责开流。
+    """
+    import dashscope
+
+    dashscope.api_key = api_key
+    http, ws = _ENDPOINTS.get(region, _ENDPOINTS["cn"])
+    dashscope.base_http_api_url = http
+    dashscope.base_websocket_api_url = ws
 
     def factory(on_result: Callable[[STTResult], None]) -> STTStream:
-        return _DashScopeStream(on_result, api_key=api_key, model=model, sample_rate=sample_rate)
+        return _DashScopeStream(on_result, model=model, sample_rate=sample_rate)
 
     return factory
 
 
 class _DashScopeStream(STTStream):
-    def __init__(self, on_result, *, api_key, model, sample_rate):
-        import dashscope
+    def __init__(self, on_result, *, model, sample_rate):
         from dashscope.audio.asr import Recognition, RecognitionCallback, RecognitionResult
-
-        dashscope.api_key = api_key
 
         class _CB(RecognitionCallback):
             def on_event(self, result):

@@ -106,7 +106,9 @@ def main() -> None:
             log.info("唤醒命中：%s", u.text)
             speaker.speak(orchestrator.respond(query), source="wake")
 
-    stt_factory = make_dashscope_factory(cfg.dashscope.api_key, cfg.dashscope.model, cfg.dashscope.sample_rate)
+    stt_factory = make_dashscope_factory(
+        cfg.dashscope.api_key, cfg.dashscope.model, cfg.dashscope.sample_rate, cfg.dashscope.region
+    )
     stt_manager = STTManager(
         stt_factory, on_utterance,
         in_rate=48000, out_rate=cfg.dashscope.sample_rate,
