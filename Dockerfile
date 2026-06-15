@@ -18,4 +18,5 @@ COPY mumble_bot/ ./mumble_bot/
 RUN useradd -m bot && mkdir -p /app/data && chown -R bot /app
 USER bot
 
+EXPOSE 8080
 ENTRYPOINT ["python", "-m", "mumble_bot.main"]

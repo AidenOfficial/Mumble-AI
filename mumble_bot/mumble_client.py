@@ -13,6 +13,7 @@ import time
 
 import pymumble_py3 as pymumble
 from pymumble_py3.constants import (
+    PYMUMBLE_CLBK_DISCONNECTED,
     PYMUMBLE_CLBK_SOUNDRECEIVED,
     PYMUMBLE_CLBK_TEXTMESSAGERECEIVED,
     PYMUMBLE_CLBK_USERREMOVED,
@@ -31,6 +32,7 @@ class MumbleClient:
         self._cmd = command_handler
         self._clock = clock
         self._my_sess = None
+        self.connected = False
         self._last_tx: dict[int, float] = {}   # session -> 最近收到音频时刻（所有人，含被除名）
         self._tx_lock = threading.Lock()
 
@@ -43,14 +45,28 @@ class MumbleClient:
         self.mumble.callbacks.set_callback(PYMUMBLE_CLBK_SOUNDRECEIVED, self._on_sound)
         self.mumble.callbacks.set_callback(PYMUMBLE_CLBK_TEXTMESSAGERECEIVED, self._on_text)
         self.mumble.callbacks.set_callback(PYMUMBLE_CLBK_USERREMOVED, self._on_user_removed)
+        self.mumble.callbacks.set_callback(PYMUMBLE_CLBK_DISCONNECTED, self._on_disconnected)
 
     def set_command_handler(self, handler) -> None:
         self._cmd = handler
+
+    def _on_disconnected(self, *_a) -> None:
+        self.connected = False
+
+    def is_connected(self) -> bool:
+        return self.connected
+
+    def current_channel(self) -> str | None:
+        try:
+            return self.mumble.my_channel()["name"]
+        except Exception:
+            return None
 
     # ---------- 连接 ----------
     def connect(self) -> None:
         self.mumble.start()
         self.mumble.is_ready()  # 阻塞直到连上
+        self.connected = True
         m = self._cfg.mumble
         if m.channel:
             try:

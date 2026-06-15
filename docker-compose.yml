@@ -6,8 +6,10 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env                 # 所有 API key / Mumble 密码（不进镜像）
+    ports:
+      - "127.0.0.1:8080:8080"      # Web 管理界面：默认仅宿主机本机可访问；LAN 访问改成 "8080:8080" 并设 WEB_PASSWORD
     volumes:
-      - ./config.yaml:/app/config.yaml:ro
+      - ./config.yaml:/app/config.yaml   # Web 改设置要写回，不能 :ro
       - ./data:/app/data           # SQLite WAL：转写记录 + 身份存档 + 除名表（持久化）
       - ./certs:/app/certs:ro      # Mumble 客户端证书（换证书=换身份，必须固定挂载）
     # 与 murmur 同机时用 host 网络最省心（UDP 直通）；跨机则确保 64738/udp 可达

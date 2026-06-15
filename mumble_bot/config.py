@@ -7,7 +7,7 @@ env 覆盖 yaml。未知字段忽略，缺省走 dataclass 默认值。
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field, fields
+from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 
 import yaml
@@ -92,6 +92,14 @@ class BehaviorConfig:
 
 
 @dataclass
+class WebConfig:
+    enabled: bool = True
+    host: str = "0.0.0.0"   # 容器内绑全网卡；对外暴露由 compose 端口映射 + password 控制
+    port: int = 8080
+    password: str = ""       # 设了才要求登录（Bearer）；留空=无鉴权（仅限可信网络/本机）
+
+
+@dataclass
 class Config:
     mumble: MumbleConfig = field(default_factory=MumbleConfig)
     dashscope: DashScopeConfig = field(default_factory=DashScopeConfig)
@@ -100,6 +108,7 @@ class Config:
     deepseek: DeepSeekConfig = field(default_factory=DeepSeekConfig)
     gemini: GeminiConfig = field(default_factory=GeminiConfig)
     behavior: BehaviorConfig = field(default_factory=BehaviorConfig)
+    web: WebConfig = field(default_factory=WebConfig)
     external_bots: dict = field(default_factory=dict)   # 可控外部 bot：{key: {commands: {action: 模板}}}
 
 
@@ -128,6 +137,7 @@ def load_config(path: str | os.PathLike | None = None) -> Config:
         deepseek=_section(DeepSeekConfig, raw.get("deepseek")),
         gemini=_section(GeminiConfig, raw.get("gemini")),
         behavior=_section(BehaviorConfig, raw.get("behavior")),
+        web=_section(WebConfig, raw.get("web")),
         external_bots=raw.get("external_bots") or {},
     )
     _apply_env(cfg)
@@ -155,6 +165,8 @@ def _apply_env(cfg: Config) -> None:
         cfg.deepseek.api_key = v
     if v := env.get("GEMINI_API_KEY"):
         cfg.gemini.api_key = v
+    if v := env.get("WEB_PASSWORD"):
+        cfg.web.password = v
 
 
 def missing_keys(cfg: Config) -> list[str]:
@@ -171,3 +183,32 @@ def missing_keys(cfg: Config) -> list[str]:
     if cfg.behavior.llm_provider == "gemini" and not cfg.gemini.api_key:
         out.append("GEMINI_API_KEY")
     return out
+
+
+_SECRET_FIELDS = {
+    "mumble": ("password",),
+    "dashscope": ("api_key",),
+    "fish": ("api_key",),
+    "openrouter": ("api_key",),
+    "deepseek": ("api_key",),
+    "gemini": ("api_key",),
+    "web": ("password",),
+}
+
+
+def to_yaml_dict(cfg: Config) -> dict:
+    """导出为可写回 config.yaml 的 dict（剔除密钥——密钥只走环境变量/.env）。"""
+    d = asdict(cfg)
+    for section, secrets in _SECRET_FIELDS.items():
+        for k in secrets:
+            d.get(section, {}).pop(k, None)
+    return d
+
+
+def save_config(cfg: Config, path: str | os.PathLike) -> None:
+    """把当前配置写回 config.yaml（不含密钥），供 Web 改动持久化。"""
+    path = Path(path)
+    if path.parent != Path(""):
+        path.parent.mkdir(parents=True, exist_ok=True)
+    text = yaml.safe_dump(to_yaml_dict(cfg), allow_unicode=True, sort_keys=False)
+    path.write_text(text, encoding="utf-8")

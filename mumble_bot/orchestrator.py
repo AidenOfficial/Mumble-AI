@@ -55,6 +55,12 @@ class Orchestrator:
         self._registry = registry          # SkillRegistry；None=无工具的简单回话
         self._max_rounds = max_tool_rounds
 
+    def set_persona(self, persona: str) -> None:
+        self._persona = persona
+
+    def set_window(self, window_sec: float) -> None:
+        self._window = window_sec
+
     def build_prompt(self, query: str, window: list[Utterance], now_ts: float | None = None) -> tuple[str, str]:
         now_ts = self._clock() if now_ts is None else now_ts
         system = build_system_prompt(self._persona, now_ts, format_transcript(window))

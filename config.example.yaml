@@ -57,6 +57,12 @@ behavior:
   persona: "你是频道里一个有点意思的伙伴，说话自然、简短、有点性格，别像客服。"
   announce_on_join: "（小特已上线，会转写本频道对话；说「小特」可以叫我，发 ,pause 可暂停转写。）"
 
+web:                          # Web 管理界面
+  enabled: true
+  host: 0.0.0.0               # 容器内绑全网卡；对外是否可达由 compose 端口映射决定
+  port: 8080
+  # password: 走 WEB_PASSWORD 环境变量；设了才要求登录（LAN 暴露务必设）
+
 # 可被 AI 操作的外部 bot（通过给频道发它的文字命令）。{query} 会被替换为歌名/参数。
 # AI 用 music_control 工具调用：先确认你的点歌 bot 真实命令前缀再改这里。
 external_bots:

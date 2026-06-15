@@ -54,6 +54,20 @@ docker compose --profile testing up
 - 新技能：继承 `mumble_bot/skills/base.py` 的 `Skill`，在 `main.py` 里 `registry.register(...)` 即可。
 - 复杂任务想用更强模型：`openrouter.tool_model` 设成 `deepseek/deepseek-v4-pro`。
 
+## 音色（Fish voice_id）
+角色音 = Fish 上某个音色的 **Model ID**，填到 `config.yaml` 的 `fish.voice_id`（代码作为 `reference_id` 传给 Fish 的 `client.tts.stream`）。
+- **用现成音色**：在 [fish.audio](https://fish.audio) 挑好音色 → 进它的页面，URL 形如 `fish.audio/m/<MODEL_ID>`，或页面上「复制 Model ID / Use API」→ 把那串 ID 填进 `voice_id`。
+- **用自己克隆的**：上传你有权使用的参考音克隆，得到的 Model ID 同样填进去。
+- 想试你物色的几个音色：改 `fish.voice_id` 换一个、重启即可（本设计锁定一个固定角色音）。
+- 模型档 `fish.model` 默认 `s2-pro`（也可 `s1` / `speech-1.6` 等更便宜）。
+
+## Web 管理界面
+浏览器打开 `http://<宿主机>:8080`（Docker 默认只映射到宿主机本机；要 LAN 访问把 compose 端口映射改成 `8080:8080` 并设 `WEB_PASSWORD`）。
+- **换音色**：设置 → 音色，改 Model ID 保存即时生效；状态页「试听」让它当场用新音色在频道里说一句——挑音色一键试。
+- 改 人设 / 唤醒词 / 命令前缀 / 主动插话阈值 / 外部bot命令 / 记忆窗口 / 管理员键——即时生效；LLM、Mumble、STT 改动标「需重启」。
+- 看 在线状态、频道成员（可绑定名字 / 除名）、最近转写、计时器；一键 暂停/恢复转写、闭嘴 N 分钟。
+- **密钥不在这里改**（留在 `.env`），界面只显示是否已配置。可选 `WEB_PASSWORD` 登录保护。
+
 ## 开发与测试
 纯逻辑模块（重采样/身份/唤醒/编排 prompt/插话门控）不依赖 Mumble，可在任意机器跑单测：
 ```bash

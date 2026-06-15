@@ -85,6 +85,9 @@ class STTManager:
     def start(self) -> None:
         self._wd.start()
 
+    def set_close_silence(self, seconds: float) -> None:
+        self._close = seconds
+
     def feed(self, session: int, canonical: str, pcm48k: bytes) -> None:
         now = self._clock()
         with self._lock:

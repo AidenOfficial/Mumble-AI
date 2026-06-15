@@ -77,6 +77,10 @@ class TranscriptStore:
         with self._lock:
             return self._buf[-1] if self._buf else None
 
+    def set_window(self, window_sec: float) -> None:
+        with self._lock:
+            self._window = window_sec
+
     def recall(self, since: float | None = None, until: float | None = None,
                contains: str | None = None, limit: int = 200) -> list[Utterance]:
         """超窗召回走 SQLite（按 t_end 升序）。"""

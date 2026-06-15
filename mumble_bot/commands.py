@@ -23,6 +23,12 @@ class CommandHandler:
         self._speaker = speaker
         self._prefix = prefix              # 独立前缀，避开点歌bot 的 ! 命名空间
 
+    def set_prefix(self, prefix: str) -> None:
+        self._prefix = prefix
+
+    def set_admin_keys(self, admin_keys) -> None:
+        self._admin_keys = admin_keys
+
     def handle(self, actor, text: str) -> bool:
         """返回是否被当作命令处理。非本前缀（如点歌bot 的 !pause）一律不接管。"""
         text = text.strip()

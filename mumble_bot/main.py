@@ -12,9 +12,10 @@ import signal
 import threading
 import time
 
-from .buffer import TranscriptStore, Utterance
+from .buffer import TranscriptStore
 from .commands import CommandHandler
 from .config import load_config, missing_keys
+from .controller import BotController
 from .db import Database
 from .identity import IdentityResolver
 from .llm.factory import build_llm
@@ -32,6 +33,7 @@ from .stt.manager import STTManager
 from .timers import TimerService
 from .tts.fish_s2 import FishS2TTS
 from .wake import WakeMatcher
+from .web.server import start_web
 
 log = logging.getLogger(__name__)
 
@@ -96,35 +98,35 @@ def main() -> None:
         persona=cfg.behavior.persona, registry=registry,
     )
 
-    # --- 通路1 final 回调：落库 + 唤醒检查（唤醒后走 agentic，可触发技能） ---
-    def on_utterance(u: Utterance) -> None:
-        store.append(u)
-        if privacy.is_muted():
-            return
-        matched, query = wake.match(u.text)
-        if matched:
-            log.info("唤醒命中：%s", u.text)
-            speaker.speak(orchestrator.respond(query), source="wake")
+    # --- 控制器：桥接 Web 界面与运行中组件；on_utterance 也在它身上（用 controller.wake 便于热换唤醒词） ---
+    config_path = os.environ.get("CONFIG_PATH", "config.yaml")
+    controller = BotController(
+        cfg, config_path, wake=wake, speaker=speaker, orchestrator=orchestrator,
+        store=store, privacy=privacy, resolver=resolver, timers=timers,
+    )
 
     stt_factory = make_dashscope_factory(
         cfg.dashscope.api_key, cfg.dashscope.model, cfg.dashscope.sample_rate, cfg.dashscope.region
     )
     stt_manager = STTManager(
-        stt_factory, on_utterance,
+        stt_factory, controller.on_utterance,
         in_rate=48000, out_rate=cfg.dashscope.sample_rate,
         close_silence=cfg.behavior.stt_close_silence_sec,
     )
+    controller.stt_manager = stt_manager
 
     proactive = ProactiveEvaluator(
         store, llm, speaker,
         anyone_transmitting=anyone_transmitting, silence_duration=silence_duration,
         privacy=privacy, cfg=cfg.behavior,
     )
+    controller.proactive = proactive
 
     # --- Mumble 客户端 + 命令处理器（先建 client 再注入 handler） ---
     from .mumble_client import MumbleClient
     client = MumbleClient(cfg, resolver=resolver, stt_manager=stt_manager, privacy=privacy)
     holder["client"] = client
+    controller.client = client
     cmd = CommandHandler(
         resolver=resolver, privacy=privacy, admin_keys=cfg.behavior.admin_keys,
         list_users=client.list_users, reply=client.send_channel,
@@ -132,11 +134,13 @@ def main() -> None:
         prefix=cfg.behavior.command_prefix,
     )
     client.set_command_handler(cmd)
+    controller.command_handler = cmd
 
     # --- 启动 ---
     timers.start()
     stt_manager.start()
     speaker.start()
+    start_web(controller, cfg)            # Web 管理界面（守护线程）
     log.info("连接 Mumble %s:%s ...", cfg.mumble.host, cfg.mumble.port)
     client.connect()
     proactive.start()

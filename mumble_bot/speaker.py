@@ -37,6 +37,10 @@ class Speaker:
     def is_speaking(self) -> bool:
         return self._speaking.is_set()
 
+    def set_tts(self, tts) -> None:
+        """热替换 TTS 引擎（换音色/模型时用）。下一句生效。"""
+        self._tts = tts
+
     def speak(self, sentences, source: str = "wake") -> None:
         """sentences: 可迭代中文句子（orchestrator.respond 的流，或 [单句]）。"""
         self._q.put((sentences, source))
